@@ -1,0 +1,20 @@
+.DS_Store
+.build/
+.swiftpm/
+*.xcodeproj
+*.xcworkspace
+Package.resolved
+
+# Build artifacts
+build/
+DerivedData/
+Distribution/
+
+# Local license files (never commit)
+Licenses/
+*.lic
+
+# Editor
+.vscode/
+.idea/
+*.swp

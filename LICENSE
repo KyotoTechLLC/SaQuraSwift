@@ -1,0 +1,512 @@
+SAQURA SOFTWARE LICENSE AGREEMENT
+
+Version 1.0 - Effective Date: January 2026
+
+IMPORTANT: READ THIS LICENSE AGREEMENT CAREFULLY BEFORE USING THE SOFTWARE.
+
+This Software License Agreement ("Agreement") is a legally binding contract between
+you (either an individual or a single legal entity, "Licensee", "You", or "Your")
+and KyotoTech LLC ("KyotoTech", "Licensor", "We", "Us", or "Our"), governing Your
+use of the SaQura cryptography library, including all associated documentation,
+updates, patches, and any related materials (collectively, the "Software").
+
+BY INSTALLING, COPYING, DOWNLOADING, ACCESSING, OR OTHERWISE USING THE SOFTWARE,
+YOU ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTOOD, AND AGREE TO BE BOUND BY THE TERMS
+AND CONDITIONS OF THIS AGREEMENT. IF YOU DO NOT AGREE TO THESE TERMS, DO NOT
+INSTALL OR USE THE SOFTWARE.
+
+IF YOU ARE ENTERING INTO THIS AGREEMENT ON BEHALF OF A COMPANY OR OTHER LEGAL
+ENTITY, YOU REPRESENT THAT YOU HAVE THE AUTHORITY TO BIND SUCH ENTITY TO THIS
+AGREEMENT. IF YOU DO NOT HAVE SUCH AUTHORITY, OR IF YOU DO NOT AGREE WITH THESE
+TERMS, YOU MUST NOT ACCEPT THIS AGREEMENT AND MAY NOT USE THE SOFTWARE.
+
+================================================================================
+1. DEFINITIONS
+================================================================================
+
+1.1 "Authorized User" means an individual who is authorized by You to use the
+    Software pursuant to a valid License Key.
+
+1.2 "Documentation" means any user guides, technical documentation, API references,
+    and other materials provided with or related to the Software.
+
+1.3 "License Key" means the unique alphanumeric code provided by KyotoTech that
+    enables the use of the Software under a specific License Tier.
+
+1.4 "License Tier" means the specific level of license (Free, Basic, Standard,
+    Pro, or Enterprise) that determines the scope of permitted use.
+
+1.5 "Machine" means a single physical or virtual computing device on which the
+    Software is installed and activated.
+
+1.6 "Application" means the software product developed by the Licensee that
+    incorporates or uses the Software.
+
+1.7 "Effective Date" means the date on which You first install, access, or
+    otherwise use the Software, or the date on which You accept this Agreement,
+    whichever occurs first.
+
+1.8 "Intellectual Property Rights" means all patents, copyrights, trade secrets,
+    trademarks, trade names, moral rights, rights of attribution, and all other
+    intellectual property rights recognized in any jurisdiction worldwide.
+
+1.9 "Confidential Information" means any non-public information about the
+    Software, including but not limited to source code, algorithms, architecture,
+    internal documentation, security mechanisms, encryption keys, and licensing
+    infrastructure.
+
+================================================================================
+2. LICENSE GRANT
+================================================================================
+
+2.1 GRANT. Subject to the terms and conditions of this Agreement and payment of
+    applicable fees, KyotoTech grants You a limited, non-exclusive,
+    non-transferable, non-sublicensable, revocable license to:
+
+    (a) Install and use the Software on the number of Machines permitted by Your
+        License Tier;
+    (b) Integrate the Software into Your Applications;
+    (c) Distribute the Software as part of Your compiled Applications to Your
+        end users, provided that the Software is not separately extractable or
+        independently usable by such end users;
+    (d) Use the Documentation in connection with Your permitted use of the
+        Software.
+
+2.2 FREE LICENSE. If You are using the Software under a Free License:
+
+    (a) The Free License is perpetual and does not expire;
+    (b) RSA encryption is available with limited key sizes;
+    (c) Password hashing is available with watermark applied to output;
+    (d) AES encryption, quantum-safe encryption, and digital signatures
+        require a paid License Tier;
+    (e) Free use is permitted for both evaluation and production purposes;
+    (f) The Free License is provided for individual developers and small projects;
+    (g) To access additional features, You may upgrade to a paid License Tier.
+
+2.3 LICENSE TIERS. The specific permissions, limitations, and features available
+    to You depend on Your License Tier. Details of each tier are available on the
+    KyotoTech website. KyotoTech reserves the right to modify tier specifications
+    at any time.
+
+2.4 ACTIVATION. The Software requires license activation, which may involve:
+
+    (a) Online activation connecting to KyotoTech licensing servers;
+    (b) Hardware binding to the Machine on which the Software is activated;
+    (c) Signature-based validation for mobile platforms;
+    (d) Periodic validation of the license status.
+
+    You agree to allow the Software to communicate with KyotoTech servers for
+    license validation, activation, and usage tracking purposes.
+
+================================================================================
+3. RESTRICTIONS
+================================================================================
+
+3.1 You shall NOT, and shall not permit any third party to:
+
+    (a) Copy, modify, adapt, translate, or create derivative works of the
+        Software or any portion thereof;
+    (b) Reverse engineer, disassemble, decompile, decode, decrypt, or otherwise
+        attempt to derive or gain access to the source code, internal structure,
+        algorithms, or architecture of the Software;
+    (c) Remove, alter, obscure, or tamper with any proprietary notices, labels,
+        marks, serial numbers, or identification on or in the Software;
+    (d) Use the Software to develop a competing product or service;
+    (e) Sublicense, lease, rent, loan, sell, resell, distribute, publish, or
+        otherwise transfer the Software or any rights therein to any third
+        party, except as expressly permitted in Section 2.1(c);
+    (f) Use the Software in any manner that violates applicable law, regulation,
+        or governmental order;
+    (g) Use the Software to process data in violation of any privacy or data
+        protection laws;
+    (h) Circumvent, disable, or otherwise interfere with any security features,
+        license enforcement mechanisms, usage limitations, or copy protection
+        mechanisms of the Software;
+    (i) Share, publish, disclose, or make available any License Key to any
+        unauthorized person or entity;
+    (j) Use a single License Key on more Machines than permitted by Your
+        License Tier;
+    (k) Use the Software for benchmarking or comparative analysis intended for
+        publication without prior written consent from KyotoTech;
+    (l) Access or use the Software in order to build a similar or competitive
+        product or service, or to copy any features, functions, or graphics of
+        the Software;
+    (m) Attempt to gain unauthorized access to KyotoTech's licensing servers,
+        systems, or networks;
+    (n) Use the Software in any application or environment where failure of the
+        Software could lead to death, personal injury, or severe physical or
+        environmental damage (including but not limited to nuclear facilities,
+        aircraft navigation, military systems, life support systems, or any
+        other life-critical application);
+    (o) Remove or circumvent the obfuscation, encryption, or code protection
+        applied to the Software;
+    (p) Redistribute the Software framework or library binary as a standalone
+        component separate from Your compiled Application.
+
+3.2 COMPETITIVE USE. You acknowledge and agree that You shall not use knowledge
+    gained from the Software, its Documentation, or its APIs to develop, market,
+    or distribute any product or service that competes with the Software.
+
+================================================================================
+4. INTELLECTUAL PROPERTY
+================================================================================
+
+4.1 OWNERSHIP. The Software, including all copies, modifications, and derivative
+    works thereof, and all Intellectual Property Rights therein, are and shall
+    remain the sole and exclusive property of KyotoTech. This Agreement does not
+    convey to You any rights of ownership in or related to the Software.
+
+4.2 RESERVATION OF RIGHTS. KyotoTech reserves all rights not expressly granted
+    to You in this Agreement. No implied licenses are granted by this Agreement.
+
+4.3 FEEDBACK. If You provide any suggestions, ideas, enhancement requests,
+    feedback, recommendations, or other information relating to the Software
+    ("Feedback"), You hereby assign to KyotoTech all rights in such Feedback
+    and acknowledge that KyotoTech shall be free to use, disclose, reproduce,
+    license, distribute, and otherwise commercialize the Feedback as it sees
+    fit, without obligation or restriction of any kind.
+
+4.4 TRADEMARKS. "SaQura", "KyotoTech", and all related logos, product names,
+    and service names are trademarks of KyotoTech LLC. You may not use these
+    trademarks without prior written permission, except to identify the
+    Software as a component of Your Application.
+
+================================================================================
+5. CONFIDENTIALITY
+================================================================================
+
+5.1 OBLIGATION. You acknowledge that the Software contains Confidential
+    Information of KyotoTech. You agree to:
+
+    (a) Hold all Confidential Information in strict confidence;
+    (b) Not disclose Confidential Information to any third party without
+        KyotoTech's prior written consent;
+    (c) Use Confidential Information solely for the purposes permitted under
+        this Agreement;
+    (d) Protect Confidential Information using the same degree of care You use
+        to protect Your own confidential information, but in no event less than
+        reasonable care.
+
+5.2 EXCLUSIONS. Confidential Information does not include information that:
+
+    (a) Is or becomes publicly available through no fault of Yours;
+    (b) Was rightfully in Your possession prior to disclosure by KyotoTech;
+    (c) Is independently developed by You without use of or reference to the
+        Confidential Information;
+    (d) Is required to be disclosed by law, regulation, or court order, provided
+        You give KyotoTech prompt written notice.
+
+================================================================================
+6. DATA COLLECTION AND PRIVACY
+================================================================================
+
+6.1 LICENSE TELEMETRY. The Software may collect and transmit the following data
+    to KyotoTech servers for license validation and enforcement purposes:
+
+    (a) License Key and activation status;
+    (b) Machine identifier (hardware fingerprint);
+    (c) Operating system type and version;
+    (d) Software version number;
+    (e) Activation timestamps.
+
+6.2 NO PERSONAL DATA. The Software does not collect, store, or transmit any
+    personal data, user data, application data, or any data processed or
+    encrypted by Your Application.
+
+6.3 DATA PROCESSING. All telemetry data is processed in accordance with
+    applicable data protection laws. You may contact KyotoTech for details
+    regarding data handling practices.
+
+================================================================================
+7. WARRANTY DISCLAIMER
+================================================================================
+
+7.1 THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTY OF ANY
+    KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE. KYOTOTECH
+    SPECIFICALLY DISCLAIMS ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
+    FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT, AND ALL WARRANTIES
+    ARISING FROM COURSE OF DEALING, USAGE, OR TRADE PRACTICE.
+
+7.2 KYOTOTECH DOES NOT WARRANT THAT:
+
+    (a) THE SOFTWARE WILL MEET YOUR REQUIREMENTS OR EXPECTATIONS;
+    (b) THE SOFTWARE WILL BE UNINTERRUPTED, TIMELY, SECURE, OR ERROR-FREE;
+    (c) THE RESULTS OBTAINED FROM THE USE OF THE SOFTWARE WILL BE ACCURATE,
+        RELIABLE, OR COMPLETE;
+    (d) ANY ERRORS IN THE SOFTWARE WILL BE CORRECTED;
+    (e) THE SOFTWARE WILL BE COMPATIBLE WITH ANY PARTICULAR HARDWARE,
+        SOFTWARE, OR NETWORK CONFIGURATION;
+    (f) THE SOFTWARE WILL BE FREE OF VIRUSES OR OTHER HARMFUL COMPONENTS.
+
+7.3 CRYPTOGRAPHIC DISCLAIMER. KYOTOTECH DOES NOT WARRANT THAT THE
+    CRYPTOGRAPHIC ALGORITHMS IMPLEMENTED IN THE SOFTWARE WILL REMAIN SECURE
+    AGAINST ALL FUTURE ATTACKS OR ADVANCES IN COMPUTING TECHNOLOGY. THE
+    QUANTUM-SAFE FEATURES ARE BASED ON CURRENT BEST PRACTICES AND ARE NOT
+    GUARANTEED TO BE RESISTANT TO ALL FUTURE QUANTUM COMPUTING CAPABILITIES.
+
+7.4 YOU ACKNOWLEDGE THAT THE SOFTWARE IS NOT DESIGNED, INTENDED, OR WARRANTED
+    FOR USE IN HAZARDOUS ENVIRONMENTS REQUIRING FAIL-SAFE PERFORMANCE OR
+    OPERATION, INCLUDING WITHOUT LIMITATION IN THE OPERATION OF NUCLEAR
+    FACILITIES, AIRCRAFT NAVIGATION OR COMMUNICATION SYSTEMS, AIR TRAFFIC
+    CONTROL, LIFE SUPPORT SYSTEMS, WEAPONS SYSTEMS, OR ANY OTHER APPLICATION
+    IN WHICH THE FAILURE OF THE SOFTWARE COULD LEAD DIRECTLY TO DEATH,
+    PERSONAL INJURY, OR SEVERE PHYSICAL OR ENVIRONMENTAL DAMAGE.
+
+7.5 NO ADVICE OR INFORMATION, WHETHER ORAL OR WRITTEN, OBTAINED BY YOU FROM
+    KYOTOTECH OR THROUGH THE SOFTWARE SHALL CREATE ANY WARRANTY NOT EXPRESSLY
+    STATED IN THIS AGREEMENT.
+
+================================================================================
+8. LIMITATION OF LIABILITY
+================================================================================
+
+8.1 TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL
+    KYOTOTECH, ITS AFFILIATES, OFFICERS, DIRECTORS, EMPLOYEES, AGENTS,
+    SUPPLIERS, OR LICENSORS BE LIABLE FOR ANY OF THE FOLLOWING, WHETHER BASED
+    ON WARRANTY, CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, OR
+    ANY OTHER LEGAL THEORY:
+
+    (a) ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR
+        PUNITIVE DAMAGES;
+    (b) ANY LOSS OF PROFITS, REVENUE, BUSINESS, SAVINGS, GOODWILL, OR
+        ANTICIPATED SAVINGS;
+    (c) ANY LOSS OF DATA OR DATA CORRUPTION;
+    (d) ANY BUSINESS INTERRUPTION OR LOSS OF BUSINESS OPPORTUNITY;
+    (e) ANY COST OF PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    (f) ANY DAMAGE TO REPUTATION;
+    (g) ANY LOSS ARISING FROM OR RELATED TO YOUR INABILITY TO USE THE SOFTWARE;
+    (h) ANY LOSS ARISING FROM UNAUTHORIZED ACCESS TO, ALTERATION OF, OR
+        DESTRUCTION OF YOUR DATA OR TRANSMISSIONS;
+
+    EVEN IF KYOTOTECH HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES OR
+    IF SUCH DAMAGES WERE FORESEEABLE.
+
+8.2 AGGREGATE LIABILITY CAP. KYOTOTECH'S TOTAL AGGREGATE LIABILITY ARISING OUT
+    OF OR RELATED TO THIS AGREEMENT, WHETHER BASED ON WARRANTY, CONTRACT, TORT
+    (INCLUDING NEGLIGENCE), STRICT LIABILITY, OR ANY OTHER LEGAL THEORY, SHALL
+    NOT EXCEED THE GREATER OF:
+
+    (a) THE TOTAL AMOUNT OF LICENSE FEES ACTUALLY PAID BY YOU TO KYOTOTECH FOR
+        THE SOFTWARE DURING THE TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE
+        EVENT GIVING RISE TO THE CLAIM; OR
+    (b) FIFTY UNITED STATES DOLLARS (USD $50.00).
+
+8.3 ESSENTIAL PURPOSE. THE LIMITATIONS IN THIS SECTION SHALL APPLY EVEN IF ANY
+    LIMITED REMEDY SPECIFIED IN THIS AGREEMENT IS FOUND TO HAVE FAILED OF ITS
+    ESSENTIAL PURPOSE.
+
+8.4 JURISDICTIONAL LIMITATIONS. SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION
+    OR LIMITATION OF CERTAIN DAMAGES. IN SUCH JURISDICTIONS, KYOTOTECH'S
+    LIABILITY SHALL BE LIMITED TO THE MAXIMUM EXTENT PERMITTED BY LAW.
+
+================================================================================
+9. INDEMNIFICATION
+================================================================================
+
+9.1 BY LICENSEE. You agree to indemnify, defend, and hold harmless KyotoTech,
+    its affiliates, officers, directors, employees, agents, and licensors
+    ("Indemnified Parties") from and against any and all claims, damages,
+    losses, liabilities, costs, and expenses (including reasonable attorneys'
+    fees and court costs) arising out of or relating to:
+
+    (a) Your use of the Software in violation of this Agreement;
+    (b) Your Application or any content, data, or materials processed by
+        Your Application;
+    (c) Any violation of applicable law, rule, or regulation by You;
+    (d) Any claim that Your use of the Software infringes any third party's
+        Intellectual Property Rights;
+    (e) Your failure to comply with the restrictions set forth in Section 3;
+    (f) Any unauthorized use of the Software by third parties through Your
+        Account or systems;
+    (g) Any breach of the confidentiality obligations in Section 5.
+
+================================================================================
+10. TERM AND TERMINATION
+================================================================================
+
+10.1 TERM. This Agreement is effective from the Effective Date and shall remain
+     in force until terminated in accordance with this Section.
+
+10.2 TERMINATION BY KYOTOTECH. KyotoTech may terminate this Agreement
+     immediately upon written notice if:
+
+     (a) You breach any term of this Agreement and fail to cure such breach
+         within fifteen (15) days after receiving written notice thereof;
+     (b) You breach any term of Section 3 (Restrictions) or Section 5
+         (Confidentiality), which shall constitute a material breach not
+         subject to cure;
+     (c) You become insolvent, file for bankruptcy, or have a receiver
+         appointed for Your assets;
+     (d) You cease to conduct business in the normal course.
+
+10.3 TERMINATION BY LICENSEE. You may terminate this Agreement at any time by:
+
+     (a) Ceasing all use of the Software;
+     (b) Permanently deleting all copies of the Software from all Machines;
+     (c) Destroying all Documentation and related materials in Your possession.
+
+10.4 EFFECT OF TERMINATION. Upon termination of this Agreement:
+
+     (a) All licenses granted herein shall immediately terminate;
+     (b) You must immediately cease all use of the Software;
+     (c) You must permanently delete all copies of the Software from all
+         Machines and systems;
+     (d) You must destroy all copies of the Documentation;
+     (e) You must certify in writing to KyotoTech that You have complied with
+         the foregoing obligations;
+     (f) KyotoTech may remotely deactivate Your License Key.
+
+10.5 SURVIVAL. Sections 3 (Restrictions), 4 (Intellectual Property),
+     5 (Confidentiality), 7 (Warranty Disclaimer), 8 (Limitation of Liability),
+     9 (Indemnification), 11 (Dispute Resolution), and 12 (General Provisions)
+     shall survive any termination or expiration of this Agreement.
+
+10.6 NO REFUNDS. Except as required by applicable law, all license fees are
+     non-refundable upon termination, regardless of the reason for termination.
+
+================================================================================
+11. DISPUTE RESOLUTION
+================================================================================
+
+11.1 GOVERNING LAW. This Agreement shall be governed by and construed in
+     accordance with the laws of Japan, without regard to its conflict of
+     laws principles.
+
+11.2 MANDATORY ARBITRATION. Any dispute, controversy, or claim arising out of
+     or relating to this Agreement, or the breach, termination, or invalidity
+     thereof, shall be settled by binding arbitration administered in accordance
+     with the rules of the Japan Commercial Arbitration Association (JCAA).
+
+     (a) The place of arbitration shall be Tokyo, Japan;
+     (b) The arbitration shall be conducted in English;
+     (c) The arbitration shall be conducted by a single arbitrator;
+     (d) The arbitrator's decision shall be final and binding on both parties;
+     (e) Judgment on the award rendered by the arbitrator may be entered in
+         any court having jurisdiction thereof.
+
+11.3 CLASS ACTION WAIVER. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW,
+     YOU AND KYOTOTECH EACH AGREE THAT ANY DISPUTE RESOLUTION PROCEEDINGS WILL
+     BE CONDUCTED ONLY ON AN INDIVIDUAL BASIS AND NOT IN A CLASS, CONSOLIDATED,
+     OR REPRESENTATIVE ACTION. YOU AND KYOTOTECH EACH WAIVE ANY RIGHT TO
+     PARTICIPATE IN A CLASS ACTION, PRIVATE ATTORNEY GENERAL ACTION, OR OTHER
+     REPRESENTATIVE OR CONSOLIDATED PROCEEDING. IF FOR ANY REASON A CLAIM
+     PROCEEDS IN COURT RATHER THAN IN ARBITRATION, BOTH YOU AND KYOTOTECH WAIVE
+     ANY RIGHT TO A JURY TRIAL. YOU ACKNOWLEDGE THAT YOU ARE WAIVING SUBSTANTIAL
+     RIGHTS, INCLUDING THE RIGHT TO PARTICIPATE IN CLASS ACTION LAWSUITS.
+
+     THIS CLASS ACTION WAIVER IS AN ESSENTIAL PART OF THIS ARBITRATION
+     AGREEMENT AND CANNOT BE SEVERED FROM IT. IF THIS CLASS ACTION WAIVER IS
+     FOUND TO BE UNENFORCEABLE, THEN THE ENTIRETY OF THIS ARBITRATION AGREEMENT
+     SHALL BE NULL AND VOID, BUT THE REMAINDER OF THIS LICENSE AGREEMENT SHALL
+     REMAIN IN FULL FORCE AND EFFECT.
+
+11.4 EXCEPTIONS TO ARBITRATION. Notwithstanding Section 11.2, either party may:
+
+     (a) Seek injunctive or other equitable relief in any court of competent
+         jurisdiction to prevent the actual or threatened infringement,
+         misappropriation, or violation of Intellectual Property Rights or
+         Confidential Information;
+     (b) Bring an action in any court of competent jurisdiction for claims
+         relating to unpaid fees.
+
+11.5 STATUTE OF LIMITATIONS. Any cause of action or claim You may have arising
+     out of or relating to this Agreement must be commenced within one (1) year
+     after the cause of action accrues. Otherwise, such cause of action or
+     claim is permanently barred.
+
+================================================================================
+12. GENERAL PROVISIONS
+================================================================================
+
+12.1 ENTIRE AGREEMENT. This Agreement constitutes the entire agreement between
+     You and KyotoTech regarding the subject matter hereof and supersedes all
+     prior or contemporaneous understandings, agreements, negotiations,
+     representations, warranties, and communications, whether written or oral.
+
+12.2 AMENDMENT. KyotoTech reserves the right to modify this Agreement at any
+     time. Updated versions will be posted on the KyotoTech website and/or
+     included with Software updates. Your continued use of the Software after
+     any such modification constitutes Your acceptance of the modified Agreement.
+
+12.3 WAIVER. No failure or delay by KyotoTech in exercising any right, power,
+     or remedy under this Agreement shall operate as a waiver of that right,
+     power, or remedy. No waiver of any term of this Agreement shall be deemed
+     a further or continuing waiver of such term or any other term.
+
+12.4 SEVERABILITY. If any provision of this Agreement is held to be invalid,
+     illegal, or unenforceable by a court of competent jurisdiction, such
+     provision shall be modified to the minimum extent necessary to make it
+     valid, legal, and enforceable while preserving its original intent. The
+     remaining provisions shall continue in full force and effect.
+
+12.5 ASSIGNMENT. You may not assign or transfer this Agreement or any rights
+     or obligations hereunder, in whole or in part, by operation of law or
+     otherwise, without the prior written consent of KyotoTech. KyotoTech may
+     assign this Agreement freely without Your consent. Any attempted
+     assignment in violation of this Section shall be null and void.
+
+12.6 NO THIRD-PARTY BENEFICIARIES. This Agreement is entered into solely
+     between You and KyotoTech. No third party shall be deemed a beneficiary
+     of this Agreement, and no third party shall have the right to enforce
+     any provision hereof.
+
+12.7 FORCE MAJEURE. KyotoTech shall not be liable for any failure or delay in
+     performance resulting from causes beyond its reasonable control, including
+     but not limited to acts of God, war, terrorism, riots, embargoes, acts of
+     civil or military authorities, fires, floods, earthquakes, accidents,
+     strikes, epidemics, pandemics, or shortages of transportation, facilities,
+     fuel, energy, labor, or materials.
+
+12.8 INDEPENDENT CONTRACTORS. The parties are independent contractors. This
+     Agreement does not create a partnership, joint venture, agency, franchise,
+     or employment relationship between the parties.
+
+12.9 NOTICES. All notices under this Agreement shall be in writing and shall
+     be deemed given when delivered personally, sent by confirmed email, or
+     sent by internationally recognized overnight courier to the addresses
+     specified by the parties.
+
+12.10 EXPORT COMPLIANCE. You agree to comply with all applicable export and
+      import laws and regulations, including the export control laws of Japan,
+      the United States, and any other applicable jurisdiction. You shall not
+      export, re-export, or transfer the Software to any country, entity, or
+      person prohibited by such laws. You acknowledge that cryptographic
+      software may be subject to additional export restrictions.
+
+12.11 GOVERNMENT USE. If You are a government entity or using the Software on
+      behalf of a government entity, the Software is provided as "commercial
+      computer software" or "commercial computer software documentation" and
+      is subject to the terms of this Agreement.
+
+12.12 LANGUAGE. This Agreement is drafted in English. In the event of any
+      conflict between the English version and any translation, the English
+      version shall prevail.
+
+12.13 HEADINGS. Section headings are for convenience only and shall not affect
+      the interpretation of this Agreement.
+
+12.14 CONSTRUCTION. This Agreement shall not be construed against either party
+      by reason of its preparation or drafting.
+
+================================================================================
+13. CONTACT INFORMATION
+================================================================================
+
+KyotoTech LLC
+Email: support@kyototech.jp
+Website: https://kyototech.jp
+
+For licensing inquiries: licensing@kyototech.co.jp
+For technical support: support@kyototech.jp
+
+================================================================================
+
+Copyright (c) 2025-2026 KyotoTech LLC. All rights reserved.
+
+SaQura, KyotoTech, and associated logos are trademarks of KyotoTech LLC.
+All other trademarks are the property of their respective owners.
+
+This software is protected by copyright law and international treaties.
+Unauthorized reproduction or distribution of this software, or any portion
+of it, may result in severe civil and criminal penalties, and will be
+prosecuted to the maximum extent possible under the law.
