@@ -83,6 +83,13 @@ public struct LicenseInfo: Codable, Sendable {
         return daysUntilExpiration > 0 && daysUntilExpiration <= 30
     }
 
+    /// Effective feature set: explicit `features` bits if non-zero,
+    /// otherwise derived from `tier` (matches .NET `LicensingService.EnabledFeatures`
+    /// and Kotlin `LicenseInfo.effectiveFeatures`).
+    public var effectiveFeatures: LicenseFeatures {
+        return features.rawValue != 0 ? features : LicenseFeatures.features(for: tier)
+    }
+
     // MARK: - Coding Keys
 
     enum CodingKeys: String, CodingKey {
@@ -114,6 +121,120 @@ public struct LicenseInfo: Codable, Sendable {
 
     /// Raw expiresAt string from JSON (for signature verification)
     internal var expiresAtRaw: String?
+
+    // MARK: - Memberwise initialiser
+    //
+    // The memberwise init is preserved explicitly so callers (and our
+    // own LicenseValidator tests) can build LicenseInfo instances by
+    // hand without going through Codable.
+
+    public init(
+        id: UUID,
+        licenseKey: String,
+        product: String,
+        tier: LicenseTier,
+        type: LicenseType,
+        parentLicenseId: UUID?,
+        features: LicenseFeatures,
+        customer: CustomerInfo,
+        issuedAt: Date,
+        expiresAt: Date,
+        hardwareId: String?,
+        maxActivations: Int,
+        currentActivations: Int,
+        isRevoked: Bool,
+        signature: String,
+        metadata: [String: String]?,
+        lastValidated: Date? = nil,
+        serverValidated: Bool = false,
+        registeredHardwareId: String? = nil,
+        issuedAtRaw: String? = nil,
+        expiresAtRaw: String? = nil
+    ) {
+        self.id = id
+        self.licenseKey = licenseKey
+        self.product = product
+        self.tier = tier
+        self.type = type
+        self.parentLicenseId = parentLicenseId
+        self.features = features
+        self.customer = customer
+        self.issuedAt = issuedAt
+        self.expiresAt = expiresAt
+        self.hardwareId = hardwareId
+        self.maxActivations = maxActivations
+        self.currentActivations = currentActivations
+        self.isRevoked = isRevoked
+        self.signature = signature
+        self.metadata = metadata
+        self.lastValidated = lastValidated
+        self.serverValidated = serverValidated
+        self.registeredHardwareId = registeredHardwareId
+        self.issuedAtRaw = issuedAtRaw
+        self.expiresAtRaw = expiresAtRaw
+    }
+
+    // MARK: - Codable
+    //
+    // **Bug history.** The synthesised Codable init treated
+    // `serverValidated: Bool` as a non-optional required field — but the
+    // production .NET license server NEVER includes this property in
+    // emitted `.lic` files (it's an internal flag set on the consumer
+    // side after activation). Decoding any real `.lic` therefore failed
+    // with `keyNotFound("serverValidated")`, which `deserializeLicense`
+    // swallowed and surfaced as a silent nil return. The bug was
+    // undetected because the Swift library had no License-system tests
+    // until the 2026-05-12 test sweep.
+    //
+    // We now decode every nominally-optional field with `decodeIfPresent`
+    // and supply the .NET-canonical defaults for missing keys.
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try c.decode(UUID.self, forKey: .id)
+        self.licenseKey = try c.decodeIfPresent(String.self, forKey: .licenseKey) ?? ""
+        self.product = try c.decodeIfPresent(String.self, forKey: .product) ?? "SaQura"
+        self.tier = try c.decode(LicenseTier.self, forKey: .tier)
+        // .NET default for missing/null `type` is Standard (0).
+        self.type = try c.decodeIfPresent(LicenseType.self, forKey: .type) ?? .standard
+        self.parentLicenseId = try c.decodeIfPresent(UUID.self, forKey: .parentLicenseId)
+        self.features = try c.decodeIfPresent(LicenseFeatures.self, forKey: .features) ?? .none
+        self.customer = try c.decode(CustomerInfo.self, forKey: .customer)
+        self.issuedAt = try c.decode(Date.self, forKey: .issuedAt)
+        self.expiresAt = try c.decode(Date.self, forKey: .expiresAt)
+        self.hardwareId = try c.decodeIfPresent(String.self, forKey: .hardwareId)
+        self.maxActivations = try c.decodeIfPresent(Int.self, forKey: .maxActivations) ?? 1
+        self.currentActivations = try c.decodeIfPresent(Int.self, forKey: .currentActivations) ?? 0
+        self.isRevoked = try c.decodeIfPresent(Bool.self, forKey: .isRevoked) ?? false
+        self.signature = try c.decodeIfPresent(String.self, forKey: .signature) ?? ""
+        self.metadata = try c.decodeIfPresent([String: String].self, forKey: .metadata)
+        self.lastValidated = try c.decodeIfPresent(Date.self, forKey: .lastValidated)
+        self.serverValidated = try c.decodeIfPresent(Bool.self, forKey: .serverValidated) ?? false
+        self.registeredHardwareId = try c.decodeIfPresent(String.self, forKey: .registeredHardwareId)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(licenseKey, forKey: .licenseKey)
+        try c.encode(product, forKey: .product)
+        try c.encode(tier, forKey: .tier)
+        try c.encode(type, forKey: .type)
+        try c.encodeIfPresent(parentLicenseId, forKey: .parentLicenseId)
+        try c.encode(features, forKey: .features)
+        try c.encode(customer, forKey: .customer)
+        try c.encode(issuedAt, forKey: .issuedAt)
+        try c.encode(expiresAt, forKey: .expiresAt)
+        try c.encodeIfPresent(hardwareId, forKey: .hardwareId)
+        try c.encode(maxActivations, forKey: .maxActivations)
+        try c.encode(currentActivations, forKey: .currentActivations)
+        try c.encode(isRevoked, forKey: .isRevoked)
+        try c.encode(signature, forKey: .signature)
+        try c.encodeIfPresent(metadata, forKey: .metadata)
+        try c.encodeIfPresent(lastValidated, forKey: .lastValidated)
+        try c.encode(serverValidated, forKey: .serverValidated)
+        try c.encodeIfPresent(registeredHardwareId, forKey: .registeredHardwareId)
+    }
 }
 
 /// Customer information for a license

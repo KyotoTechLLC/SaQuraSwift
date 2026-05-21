@@ -7,6 +7,11 @@ import XCTest
 
 final class PasswordHasherTests: XCTestCase {
 
+    // Force debug-mode bypass so password-hash tests run identically
+    // under `swift test` and `swift test -c release`. Test-sweep 2026-05-12.
+    override func setUp() { super.setUp(); debugModeOverride = true }
+    override func tearDown() { debugModeOverride = nil; super.tearDown() }
+
     // MARK: - Hash Generation Tests
 
     func testPasswordHashing() async throws {

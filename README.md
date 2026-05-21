@@ -30,7 +30,7 @@ Or add to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/KyotoTechLLC/SaQuraSwift.git", from: "1.0.0")
+    .package(url: "https://github.com/KyotoTechLLC/SaQuraSwift.git", from: "1.0.6")
 ]
 ```
 
@@ -221,21 +221,21 @@ let decrypted = try await encrypted.decryptWithAES(key: key)
 
 ## Documentation
 
-- **API Documentation**: [https://kyototech.jp/docs/saqura](https://kyototech.jp/docs/saqura)
-- **Samples**: [github.com/KyotoTechLLC/saqura-samples](https://github.com/KyotoTechLLC/saqura-samples)
+- **User Guide**: See `USER_GUIDE.md` for detailed usage instructions
+- **API Documentation**: [https://kyototech.co.jp/docs/saqura](https://kyototech.co.jp/docs/saqura)
 
 ## License
 
 Commercial license required for production use. Free tier available for evaluation and development.
 
-- **Purchase**: [https://kyototech.jp/pricing](https://kyototech.jp/pricing)
-- **Support**: [https://kyototech.jp/contact](https://kyototech.jp/contact)
+- **Purchase**: [https://kyototech.co.jp/pricing](https://kyototech.co.jp/pricing)
+- **Support**: [https://kyototech.co.jp/contact](https://kyototech.co.jp/contact)
 - **Licensing Portal**: [https://billing.kyototech.co.jp](https://billing.kyototech.co.jp)
 
 ## Links
 
 - [NuGet Package (.NET)](https://www.nuget.org/packages/SaQura)
-- [KyotoTech Website](https://kyototech.jp)
+- [KyotoTech Website](https://kyototech.co.jp)
 
 ---
 

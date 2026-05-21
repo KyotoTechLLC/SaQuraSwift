@@ -53,11 +53,34 @@ internal enum InternalLogger {
     }
 }
 
-/// Check if running in debug mode
+/// Whether internal license-gate diagnostics are skipped.
+/// Debug builds keep the convenience for in-house dev. Release builds
+/// always return false by default so customers cannot bypass gates via
+/// env var.
+///
+/// The unit-test override below is gated to internal visibility, so a
+/// customer-facing binary cannot reach it through the public API
+/// surface. It exists because release-mode test runs (`swift test -c
+/// release`) compile out the `#if DEBUG` branch, which would otherwise
+/// make every license-gated test path produce watermarked /
+/// size-limited output the test wasn't written to handle. Same idiom
+/// as Kotlin's `debugModeOverride` from M3.
 internal var isDebugMode: Bool {
+    if let override = debugModeOverride {
+        return override
+    }
     #if DEBUG
     return true
     #else
-    return ProcessInfo.processInfo.environment["KYOTOTECH_DEBUG_MODE"] == "true"
+    return false
     #endif
 }
+
+/// Test-only override for `isDebugMode`. `nil` means "use the
+/// `#if DEBUG` default" (the production setting); a non-`nil` value
+/// forces the choice. Reset to `nil` after each test that touches it
+/// — leaking state across tests is a footgun and resetting is cheap.
+///
+/// Same idiom as `ApiLicense.installForTesting` (the test-only hook
+/// used by the License test fixtures).
+internal var debugModeOverride: Bool?

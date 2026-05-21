@@ -7,6 +7,11 @@ import XCTest
 
 final class RSATests: XCTestCase {
 
+    // Force debug-mode bypass so RSA crypto tests run identically under
+    // `swift test` and `swift test -c release`. Test-sweep 2026-05-12.
+    override func setUp() { super.setUp(); debugModeOverride = true }
+    override func tearDown() { debugModeOverride = nil; super.tearDown() }
+
     // MARK: - Key Generation Tests
 
     func testRSAKeyPairGeneration() async throws {
@@ -72,11 +77,13 @@ final class RSATests: XCTestCase {
 
         let encrypted = try await plaintext.encryptWithRSA(publicKey: publicKey)
 
-        // Verify hybrid header "HYBR" is present
-        if let encryptedData = Data(base64Encoded: encrypted) {
-            let header = String(data: encryptedData.prefix(4), encoding: .utf8)
-            XCTAssertEqual(header, "HYBR")
-        }
+        // Post-Sess-136: Swift hybrid wire format is the .NET canonical
+        // layout `[KeyLen:4 LE = 512][EncKey:512][Nonce:12][Tag:16][CT:N]`.
+        // The first four bytes encode 512 as little-endian uint32.
+        let encryptedData = try XCTUnwrap(Data(base64Encoded: encrypted))
+        let keyLen = encryptedData.prefix(4).withUnsafeBytes { $0.load(as: UInt32.self).littleEndian }
+        XCTAssertEqual(keyLen, 512, "Hybrid wire format keyLen prefix should equal 512 (RSA-4096 ciphertext length)")
+        XCTAssertNotEqual(encryptedData.prefix(4), Data([0x48, 0x59, 0x42, 0x52]), "Hybrid wire format should NOT start with legacy 'HYBR' magic post-Sess-136")
 
         let decrypted = try await encrypted.decryptWithRSA(privateKey: privateKey)
         XCTAssertEqual(decrypted, plaintext)

@@ -167,16 +167,29 @@ internal enum LicenseValidator {
         return result
     }
 
-    /// Creates the data to be signed (must match server-side exactly)
+    /// Creates the data to be signed (must match server-side exactly).
+    ///
+    /// **Bug history (2026-05-12 fix).** Until today this method called
+    /// `.uppercased()` on every UUID. The .NET license server signs with
+    /// `Guid.ToString()`, which emits **lowercase** UUIDs by default, so
+    /// the Swift-side signing string never matched what the server signed
+    /// — every real `.lic` failed verification. The bug was undetected
+    /// because the Swift library had no License-system tests prior to
+    /// the test sweep on 2026-05-12 (see `LicenseValidatorTests`). The
+    /// fix here aligns Swift with .NET by using `.lowercased()`. A more
+    /// defensive long-term solution (also done by Kotlin M3) would
+    /// preserve the raw JSON string verbatim — that change is deferred
+    /// to a future revision so callers building licenses programmatically
+    /// (e.g. INTERNAL test fixtures) don't have to track the raw bytes.
     private static func createSigningData(_ license: LicenseInfo) -> String {
         var components: [String] = []
 
-        components.append(license.id.uuidString.uppercased())
+        components.append(license.id.uuidString.lowercased())
         components.append(license.licenseKey)
         components.append(license.product)
         components.append(String(license.tier.rawValue))
         components.append(String(license.features.rawValue))
-        components.append(license.customer.id.uuidString.uppercased())
+        components.append(license.customer.id.uuidString.lowercased())
         components.append(license.customer.email)
 
         // Use raw strings if available (for signature verification accuracy)
@@ -197,7 +210,7 @@ internal enum LicenseValidator {
 
         // ParentLicenseId is included for distribution licenses
         if let parentId = license.parentLicenseId {
-            components.append(parentId.uuidString.uppercased())
+            components.append(parentId.uuidString.lowercased())
         }
 
         if let hardwareId = license.hardwareId, !hardwareId.isEmpty {
@@ -340,7 +353,7 @@ internal enum LicenseValidator {
 
         do {
             let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .iso8601
+            decoder.dateDecodingStrategy = .custom(decodeDotNetIso8601)
 
             var license = try decoder.decode(LicenseInfo.self, from: jsonData)
 
@@ -359,5 +372,64 @@ internal enum LicenseValidator {
             InternalLogger.log("Failed to deserialize license: \(error)", level: .error)
             return nil
         }
+    }
+
+    /// Custom date decoder tolerant of the formats the .NET license
+    /// server actually emits.
+    ///
+    /// **Bug history.** Before this helper existed, `deserializeLicense`
+    /// used `JSONDecoder.dateDecodingStrategy = .iso8601`, whose default
+    /// `ISO8601DateFormatter` does NOT accept fractional seconds at all
+    /// — and .NET's `DateTime.ToString("O")` emits **seven** fractional
+    /// digits (100 ns ticks): `2025-12-31T06:51:41.7352260Z`. Every
+    /// production `.lic` file therefore caused `deserializeLicense` to
+    /// throw and return nil, breaking every Swift consumer trying to
+    /// activate a real license. The bug went undetected because the
+    /// Swift library had no License-system tests prior to the 2026-05-12
+    /// test sweep (see `LicenseValidatorTests`).
+    ///
+    /// **Fidelity note.** Foundation's date types only retain
+    /// millisecond precision; the sub-millisecond digits .NET emits are
+    /// truncated here. That is safe because the signing string uses the
+    /// **raw** date string from `issuedAtRaw` / `expiresAtRaw`, not the
+    /// parsed `Date`, so signature verification still matches byte-for-byte.
+    private static func decodeDotNetIso8601(_ decoder: Decoder) throws -> Date {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+
+        // Trim sub-millisecond fractional digits down to 3 so
+        // ISO8601DateFormatter with .withFractionalSeconds can handle it.
+        let normalized = normalizeDotNetTimestamp(raw)
+
+        let withFractional = ISO8601DateFormatter()
+        withFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = withFractional.date(from: normalized) {
+            return date
+        }
+        let plain = ISO8601DateFormatter()
+        plain.formatOptions = [.withInternetDateTime]
+        if let date = plain.date(from: normalized) {
+            return date
+        }
+        throw DecodingError.dataCorruptedError(
+            in: container,
+            debugDescription: "Unparseable ISO8601 timestamp: \(raw)"
+        )
+    }
+
+    /// Truncates `.NNNNNNN` (more than 3 fractional digits) to `.NNN` so
+    /// the result parses with `ISO8601DateFormatter.withFractionalSeconds`.
+    /// Inputs with 0 or ≤3 fractional digits pass through unchanged.
+    internal static func normalizeDotNetTimestamp(_ s: String) -> String {
+        guard let dot = s.firstIndex(of: ".") else { return s }
+        // Find the first non-digit character after the dot.
+        var end = s.index(after: dot)
+        while end < s.endIndex, s[end].isNumber {
+            end = s.index(after: end)
+        }
+        let fractional = s[s.index(after: dot)..<end]
+        if fractional.count <= 3 { return s }
+        let trimmed = fractional.prefix(3)
+        return String(s[s.startIndex..<dot]) + "." + trimmed + String(s[end..<s.endIndex])
     }
 }

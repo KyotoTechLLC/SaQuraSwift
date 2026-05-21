@@ -52,10 +52,22 @@ public struct Quantum {
             DispatchQueue.global(qos: .userInitiated).async {
                 do {
                     let keyPair = try generateKeyPairSync(strength: strength, generation: generation)
+                    // Output sanity-net (Defense-in-Depth, .NET 1.0.7 parity).
+                    // The per-generation helpers should already throw on internal
+                    // failure since v1.0.6, but this guards against future regressions
+                    // where a backend silently returns an empty tuple.
+                    try CallerInputValidator.ensureKeyGenOutput(keyPair, generation: generation, strength: strength)
                     InternalLogger.debug("Generated \(generation) key pair: \(generation.securityAssessment)")
                     continuation.resume(returning: keyPair)
-                } catch {
+                } catch let error as QuantumOperationError {
                     continuation.resume(throwing: error)
+                } catch {
+                    InternalLogger.warning("Quantum key generation failed for \(generation): \(error.localizedDescription)")
+                    continuation.resume(throwing: QuantumOperationError.keyGeneration(
+                        generation: generation,
+                        strength: strength,
+                        underlyingError: error
+                    ))
                 }
             }
         }
@@ -103,6 +115,14 @@ public struct Quantum {
         _ message: String,
         publicKey: Data
     ) async throws -> (encapsulatedSecret: Data, encryptedMessage: Data) {
+        // Defense-in-Depth (.NET 1.0.7 parity): rejects empty AND all-zero
+        // public keys at the API boundary. All-zero is the signal that the
+        // caller defensively wiped a previously-cached key reference and is
+        // now passing the cleared buffer back. Throws SaQuraError.invalidInput
+        // BEFORE any async dispatch so it bubbles straight to the caller
+        // without being wrapped in QuantumOperationError.
+        try CallerInputValidator.ensurePublicKey(publicKey)
+
         // Check license for size limits
         if !isDebugMode && !ApiLicense.isQuantumAvailable {
             FeatureGate.applyRateLimitIfNeeded()
@@ -133,6 +153,25 @@ public struct Quantum {
                 do {
                     let result = try encryptSync(message, publicKey: publicKey)
 
+                    // Output sanity-net (Defense-in-Depth, .NET 1.0.7 parity).
+                    // Helper-level v1.0.6 typed-error fix should already throw on
+                    // internal failure; this guards future regressions that return
+                    // empty tuples instead.
+                    let keyGeneration = CallerInputValidator.generationFromKeyByte(publicKey)
+                    let keyStrength = CallerInputValidator.strengthFromKeyByte(publicKey)
+                    try CallerInputValidator.ensureEncryptOutput(
+                        result.encapsulatedSecret,
+                        memberName: "encapsulatedSecret",
+                        generation: keyGeneration,
+                        strength: keyStrength
+                    )
+                    try CallerInputValidator.ensureEncryptOutput(
+                        result.encryptedMessage,
+                        memberName: "encryptedMessage",
+                        generation: keyGeneration,
+                        strength: keyStrength
+                    )
+
                     // Apply watermark for unlicensed
                     var encryptedMessage = result.encryptedMessage
                     if !isDebugMode && !ApiLicense.isQuantumAvailable {
@@ -143,8 +182,16 @@ public struct Quantum {
                     }
 
                     continuation.resume(returning: (result.encapsulatedSecret, encryptedMessage))
-                } catch {
+                } catch let error as QuantumOperationError {
                     continuation.resume(throwing: error)
+                } catch {
+                    let (gen, str) = detectGenerationAndStrength(from: publicKey)
+                    InternalLogger.warning("Quantum encryption failed for \(gen): \(error.localizedDescription)")
+                    continuation.resume(throwing: QuantumOperationError.encryption(
+                        generation: gen,
+                        strength: str,
+                        underlyingError: error
+                    ))
                 }
             }
         }
@@ -190,6 +237,15 @@ public struct Quantum {
     ) async throws -> String {
         guard !encryptedMessage.isEmpty else { return "" }
 
+        // Defense-in-Depth (.NET 1.0.7 parity): rejects empty AND all-zero
+        // key / secret buffers at the API boundary. Throws
+        // SaQuraError.invalidInput BEFORE async dispatch so it bubbles
+        // straight to the caller without QuantumOperationError wrapping.
+        try CallerInputValidator.ensurePrivateKey(privateKey)
+        if let secret = secret {
+            try CallerInputValidator.ensureSecret(secret)
+        }
+
         return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
                 do {
@@ -218,6 +274,19 @@ public struct Quantum {
 
                     var decrypted = try decryptSync(actualMessage, privateKey: privateKey, secret: secret)
 
+                    // Output sanity-net (Defense-in-Depth, .NET 1.0.7 parity).
+                    // Authentication failures legitimately return an empty string;
+                    // a nil result would be a backend regression — wrap it in the
+                    // typed Quantum error so callers catching QuantumOperationError
+                    // still see it.
+                    let keyGeneration = CallerInputValidator.generationFromKeyByte(privateKey)
+                    let keyStrength = CallerInputValidator.strengthFromKeyByte(privateKey)
+                    try CallerInputValidator.ensureDecryptOutput(
+                        decrypted,
+                        generation: keyGeneration,
+                        strength: keyStrength
+                    )
+
                     // Apply output watermark for unlicensed
                     if !isDebugMode && !ApiLicense.isQuantumAvailable {
                         FeatureGate.applyRateLimitIfNeeded()
@@ -225,8 +294,16 @@ public struct Quantum {
                     }
 
                     continuation.resume(returning: decrypted)
-                } catch {
+                } catch let error as QuantumOperationError {
                     continuation.resume(throwing: error)
+                } catch {
+                    let (gen, str) = detectGenerationAndStrength(from: privateKey)
+                    InternalLogger.warning("Quantum decryption failed for \(gen): \(error.localizedDescription)")
+                    continuation.resume(throwing: QuantumOperationError.decryption(
+                        generation: gen,
+                        strength: str,
+                        underlyingError: error
+                    ))
                 }
             }
         }
@@ -256,6 +333,19 @@ public struct Quantum {
         case .gen7:
             return try QGeneration7.decrypt(encryptedMessage, privateKey: privateKey, secret: secret)
         }
+    }
+
+    // MARK: - Private helpers
+
+    /// Reads the leading two metadata bytes (generation, strength) from a key blob.
+    /// Falls back to (.gen4, .standard) when the blob is malformed — these are
+    /// only used as diagnostic fields on the thrown error.
+    private static func detectGenerationAndStrength(from key: Data) -> (QuantumGeneration, QuantumStrength) {
+        let gen = QuantumGeneration(rawValue: key.first ?? 0) ?? .gen4
+        let str: QuantumStrength = key.count >= 2
+            ? (QuantumStrength(rawValue: key[key.startIndex + 1]) ?? .standard)
+            : .standard
+        return (gen, str)
     }
 
     // MARK: - Utility Functions

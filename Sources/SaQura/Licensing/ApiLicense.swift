@@ -31,27 +31,27 @@ public enum ApiLicense {
 
     /// Gets whether RSA features are available (Basic+)
     public static var isRSAAvailable: Bool {
-        isLicensed && currentLicense?.features.contains(.rsa) == true
+        isLicensed && currentLicense?.effectiveFeatures.contains(.rsa) == true
     }
 
     /// Gets whether password hashing is available without watermark (Basic+)
     public static var isPasswordHashingAvailable: Bool {
-        isLicensed && currentLicense?.features.contains(.passwordHashing) == true
+        isLicensed && currentLicense?.effectiveFeatures.contains(.passwordHashing) == true
     }
 
     /// Gets whether AES features are available (Standard+)
     public static var isAESAvailable: Bool {
-        isLicensed && currentLicense?.features.contains(.aes) == true
+        isLicensed && currentLicense?.effectiveFeatures.contains(.aes) == true
     }
 
     /// Gets whether Quantum features are available (Pro+)
     public static var isQuantumAvailable: Bool {
-        isLicensed && currentLicense?.features.contains(.quantum) == true
+        isLicensed && currentLicense?.effectiveFeatures.contains(.quantum) == true
     }
 
     /// Gets whether output should be watermarked
     public static var requiresWatermark: Bool {
-        !isLicensed || currentLicense?.features.contains(.noWatermark) != true
+        !isLicensed || currentLicense?.effectiveFeatures.contains(.noWatermark) != true
     }
 
     // MARK: - Activation Methods
@@ -239,12 +239,12 @@ public enum ApiLicense {
 
     /// Gets the licensing portal URL
     public static func getLicensingPortalUrl() -> String {
-        return "https://kyototech.jp/pricing"
+        return "https://kyototech.co.jp/pricing"
     }
 
     /// Gets the support URL (contact form)
     public static func getSupportUrl() -> String {
-        return "https://kyototech.jp/contact"
+        return "https://kyototech.co.jp/contact"
     }
 
     // MARK: - Initialization

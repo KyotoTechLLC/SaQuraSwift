@@ -7,6 +7,14 @@ import XCTest
 
 final class QuantumTests: XCTestCase {
 
+    // Force debug-mode bypass so Quantum crypto tests run identically
+    // under `swift test` and `swift test -c release`. The license-gating
+    // surface is verified separately by QuantumDefenseInDepthTests +
+    // LicenseValidatorTests (which explicitly toggle the override).
+    // Test-sweep 2026-05-12.
+    override func setUp() { super.setUp(); debugModeOverride = true }
+    override func tearDown() { debugModeOverride = nil; super.tearDown() }
+
     // MARK: - Key Generation Tests
 
     func testQuantumKeyGenerationGen2() async throws {
@@ -333,8 +341,16 @@ final class QuantumTests: XCTestCase {
             _ = try await encrypted.decryptWithQuantum(privateKey: privateKey2, secret: secret)
             XCTFail("Should have thrown an error")
         } catch {
-            // Expected — wrong key should fail decryption
-            XCTAssertTrue(error is SaQuraError || error is OQSKem.OQSError)
+            // Expected — wrong key should fail decryption.
+            // Public surface from 1.0.6 onwards is QuantumOperationError; pre-existing
+            // SaQuraError / OQSError are still acceptable for paths that don't pass
+            // through the public Quantum.decrypt wrapper.
+            XCTAssertTrue(
+                error is QuantumOperationError ||
+                error is SaQuraError ||
+                error is OQSKem.OQSError,
+                "Unexpected error type: \(type(of: error)) — \(error)"
+            )
         }
     }
 

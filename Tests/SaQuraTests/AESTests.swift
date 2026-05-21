@@ -7,6 +7,21 @@ import XCTest
 
 final class AESTests: XCTestCase {
 
+    /// Force debug-mode behaviour so these crypto-logic tests run
+    /// identically under `swift test` and `swift test -c release`. The
+    /// license-gating surface (watermarks, size limits) is verified
+    /// separately by the License + Quantum test files. Same pattern as
+    /// the Kotlin AESTest.
+    override func setUp() {
+        super.setUp()
+        debugModeOverride = true
+    }
+
+    override func tearDown() {
+        debugModeOverride = nil
+        super.tearDown()
+    }
+
     // MARK: - Key Generation Tests
 
     func testAESKeyGeneration() {

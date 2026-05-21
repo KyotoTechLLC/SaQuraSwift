@@ -116,14 +116,23 @@ public struct RSAKey {
 
     // MARK: - Key Import
 
-    /// Imports a private key from PEM format
+    /// Imports a private key from PEM format.
+    ///
+    /// Accepts both `-----BEGIN PRIVATE KEY-----` (PKCS#8) and
+    /// `-----BEGIN RSA PRIVATE KEY-----` (PKCS#1) PEM headers. For raw
+    /// PKCS#1 DER input, falls back to wrapping in PKCS#8 if Apple's
+    /// `SecKeyCreateWithData` rejects the direct form.
     internal static func importPrivateKey(from pem: String) -> SecKey? {
-        let pemContent = extractPEMContent(pem, type: "PRIVATE KEY")
+        // Try both PEM headers: PKCS#8 first, then PKCS#1 fallback.
+        var pemContent = extractPEMContent(pem, type: "PRIVATE KEY")
+        if pemContent.isEmpty {
+            pemContent = extractPEMContent(pem, type: "RSA PRIVATE KEY")
+        }
         guard let data = Data(base64Encoded: pemContent, options: .ignoreUnknownCharacters) else {
             return nil
         }
 
-        // Try to unwrap PKCS#8 if present
+        // If input is PKCS#8, unwrap to raw PKCS#1; otherwise use as-is.
         let keyData = unwrapPKCS8(data) ?? data
 
         let attributes: [String: Any] = [
@@ -132,13 +141,29 @@ public struct RSAKey {
             kSecAttrKeySizeInBits as String: keySize
         ]
 
+        // Try direct first — `SecKeyCreateWithData` accepts raw PKCS#1
+        // RSAPrivateKey DER per Apple docs on most macOS / iOS versions.
         var error: Unmanaged<CFError>?
-        return SecKeyCreateWithData(keyData as CFData, attributes as CFDictionary, &error)
+        if let key = SecKeyCreateWithData(keyData as CFData, attributes as CFDictionary, &error) {
+            return key
+        }
+
+        // Fallback for environments where the direct PKCS#1 path is
+        // rejected: wrap in PKCS#8 envelope and retry. Same workaround
+        // pattern as `LicenseValidator.importPublicKey`'s SPKI fallback.
+        let pkcs8Data = wrapInPKCS8(keyData)
+        return SecKeyCreateWithData(pkcs8Data as CFData, attributes as CFDictionary, nil)
     }
 
-    /// Imports a public key from PEM format
+    /// Imports a public key from PEM format.
+    ///
+    /// Accepts both `-----BEGIN PUBLIC KEY-----` (SPKI/PKCS#8-wrapped) and
+    /// `-----BEGIN RSA PUBLIC KEY-----` (raw PKCS#1) PEM headers. For raw
+    /// PKCS#1 DER input, falls back to wrapping in SPKI if Apple's
+    /// `SecKeyCreateWithData` rejects the direct form. This matches the
+    /// SPKI-wrap fallback used by `LicenseValidator.importPublicKey`.
     internal static func importPublicKey(from pem: String) -> SecKey? {
-        // Try different PEM headers
+        // Try both PEM headers: SPKI first, then PKCS#1 fallback.
         var pemContent = extractPEMContent(pem, type: "PUBLIC KEY")
         if pemContent.isEmpty {
             pemContent = extractPEMContent(pem, type: "RSA PUBLIC KEY")
@@ -148,7 +173,7 @@ public struct RSAKey {
             return nil
         }
 
-        // Try to unwrap SPKI if present
+        // If input is SPKI, unwrap to raw PKCS#1; otherwise use as-is.
         let keyData = unwrapSPKI(data) ?? data
 
         let attributes: [String: Any] = [
@@ -157,8 +182,18 @@ public struct RSAKey {
             kSecAttrKeySizeInBits as String: keySize
         ]
 
+        // Try direct first.
         var error: Unmanaged<CFError>?
-        return SecKeyCreateWithData(keyData as CFData, attributes as CFDictionary, &error)
+        if let key = SecKeyCreateWithData(keyData as CFData, attributes as CFDictionary, &error) {
+            return key
+        }
+
+        // Fallback for environments where `SecKeyCreateWithData` rejects
+        // raw PKCS#1 DER for RSA public keys: wrap in SPKI and retry.
+        // Uses the existing `wrapInSPKI` helper defined below — same
+        // ASN.1 layout `LicenseValidator.wrapPKCS1InSPKI` uses.
+        let spkiData = wrapInSPKI(keyData)
+        return SecKeyCreateWithData(spkiData as CFData, attributes as CFDictionary, nil)
     }
 
     // MARK: - PEM Helpers

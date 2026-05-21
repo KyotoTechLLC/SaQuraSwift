@@ -20,6 +20,7 @@
 #   ├── SaQura.xcframework.zip
 #   ├── Package.swift
 #   ├── README.md
+#   ├── USER_GUIDE.md
 #   └── checksum.txt
 #
 # =============================================================================
@@ -89,6 +90,7 @@ EOF
 # Step 4: Copy documentation
 echo -e "${YELLOW}[3/4] Copying documentation...${NC}"
 cp "${PROJECT_DIR}/README.md" "${DISTRIBUTION_DIR}/"
+cp "${PROJECT_DIR}/USER_GUIDE.md" "${DISTRIBUTION_DIR}/"
 
 # Create a minimal LICENSE file
 cat > "${DISTRIBUTION_DIR}/LICENSE" << 'EOF'
@@ -100,12 +102,12 @@ COMMERCIAL LICENSE
 This software requires a commercial license for production use.
 Free tier available for evaluation and development.
 
-Purchase: https://kyototech.jp/pricing
-Support: https://kyototech.jp/contact
+Purchase: https://kyototech.co.jp/pricing
+Support: https://kyototech.co.jp/contact
 Licensing Portal: https://billing.kyototech.co.jp
 
 By using this software, you agree to the terms and conditions
-available at https://kyototech.jp/terms
+available at https://kyototech.co.jp/terms
 EOF
 
 # Step 5: Create version file

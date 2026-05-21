@@ -11,6 +11,12 @@ import XCTest
 
 final class CrossPlatformTests: XCTestCase {
 
+    // Force debug-mode bypass so cross-platform format tests run
+    // identically under `swift test` and `swift test -c release`.
+    // Test-sweep 2026-05-12.
+    override func setUp() { super.setUp(); debugModeOverride = true }
+    override func tearDown() { debugModeOverride = nil; super.tearDown() }
+
     // MARK: - Key Format Compatibility
 
     /// Verifies that Swift key headers match .NET format

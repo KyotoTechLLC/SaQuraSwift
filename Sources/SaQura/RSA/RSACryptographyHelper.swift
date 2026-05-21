@@ -59,26 +59,53 @@ internal struct RSACryptographyHelper {
         return encrypted as Data
     }
 
-    /// Hybrid encryption: RSA-encrypted AES key + AES-GCM encrypted data
+    /// Hybrid encryption: RSA-encrypted AES key + AES-GCM encrypted data.
+    ///
+    /// Wire format (.NET canonical):
+    ///
+    /// ```
+    /// Offset  Length    Field
+    /// 0       4         keyLen (uint32 little-endian) — always 512 for RSA-4096
+    /// 4       512       encryptedAesKey   (RSA-4096 OAEP-SHA256 of the AES-256 key)
+    /// 516     12        nonce             (AES-GCM IV)
+    /// 528     16        tag               (AES-GCM authentication tag, separate
+    ///                                      from ciphertext)
+    /// 544     N         ciphertext        (AES-256-GCM(plaintext, key, nonce))
+    /// ```
+    ///
+    /// Three changes vs pre-Sess-136 Swift format:
+    ///  - No `HYBR` magic prefix (was `[HYBR:4]` at offset 0).
+    ///  - KeyLen is **little-endian** (was big-endian).
+    ///  - Tag comes **before** ciphertext (was after, via the AES-GCM
+    ///    helper's `[Nonce][CT][Tag]` concat layout).
+    ///
+    /// Backwards-compat: existing Swift-encrypted hybrid data uses the
+    /// old `HYBR`-prefixed format. The decrypt path is dual-shape and
+    /// continues to read both via `legacyDecryptHybrid`.
     private static func encryptHybrid(_ data: Data, publicKey: SecKey) throws -> Data {
-        // Generate random AES key
+        // Generate random AES key, RSA-encrypt it.
         let aesKey = Data.secureRandom(count: 32)
-
-        // Encrypt data with AES-GCM
-        let encryptedData = try AESCryptographyHelper.encrypt(data, key: aesKey.toBase64())
-
-        // Encrypt AES key with RSA
         let encryptedKey = try encryptRSA(aesKey, publicKey: publicKey)
+        precondition(encryptedKey.count == 512, "RSA-4096 OAEP-SHA256 ciphertext must be 512 bytes (got \(encryptedKey.count))")
 
-        // Format: [HYBR:4][KeyLength:4][EncryptedKey][EncryptedData]
-        var result = Data()
-        result.append(hybridHeader)
+        // AES-GCM-seal the plaintext directly via CryptoKit so we have
+        // ciphertext + tag as separate values (the high-level helper would
+        // concat them in `[Nonce][CT][Tag]` order which is the OLD Swift
+        // hybrid layout — we need `[Nonce][Tag][CT]` to match .NET).
+        let symmetricKey = SymmetricKey(data: aesKey)
+        let sealedBox = try AES.GCM.seal(data, using: symmetricKey)
+        let nonce = Data(sealedBox.nonce)
+        let tag = sealedBox.tag
+        let ciphertext = sealedBox.ciphertext
 
-        var keyLength = UInt32(encryptedKey.count).bigEndian
-        result.append(Data(bytes: &keyLength, count: 4))
+        var result = Data(capacity: 4 + encryptedKey.count + nonce.count + tag.count + ciphertext.count)
+        // keyLen: 4 bytes little-endian, always 512.
+        var keyLenLE = UInt32(encryptedKey.count).littleEndian
+        result.append(Data(bytes: &keyLenLE, count: 4))
         result.append(encryptedKey)
-        result.append(encryptedData)
-
+        result.append(nonce)
+        result.append(tag)
+        result.append(ciphertext)
         return result
     }
 
@@ -99,18 +126,35 @@ internal struct RSACryptographyHelper {
         return plainText
     }
 
-    /// Decrypts data with RSA or hybrid decryption
+    /// Decrypts data with RSA or hybrid decryption. Dual-shape on the
+    /// hybrid branch (.NET-canonical wire format):
+    ///  - **New format** (.NET canonical): first 4 bytes are uint32 LE = 512.
+    ///  - **Legacy Swift format**: first 4 bytes are `"HYBR"` (0x48 0x59 0x42 0x52).
+    ///  - **Direct OAEP**: 512-byte ciphertext block, no prefix.
+    ///
+    /// The detection is unambiguous because the new-format keyLen (always
+    /// 512 = 0x00 0x02 0x00 0x00 LE) cannot collide with the `HYBR` magic.
     static func decrypt(_ data: Data, privateKeyPEM: String) throws -> Data {
         guard let secKey = RSAKey.importPrivateKey(from: privateKeyPEM) else {
             throw SaQuraError.invalidKey("Invalid private key")
         }
 
-        // Check for hybrid encryption
         if data.count >= 8 && data.prefix(4) == hybridHeader {
-            return try decryptHybrid(data, privateKey: secKey)
-        } else {
-            return try decryptRSA(data, privateKey: secKey)
+            // Legacy Swift hybrid format from pre-Sess-136 — preserved for
+            // backwards-compat with user data encrypted by older Swift libs.
+            return try legacyDecryptHybrid(data, privateKey: secKey)
         }
+
+        // Try new (.NET-canonical) hybrid format if the data is long enough
+        // AND first 4 bytes as little-endian uint32 equal 512 (RSA-4096
+        // block size).
+        if data.count >= 4 + 512 + 12 + 16 {
+            let keyLen = data.prefix(4).withUnsafeBytes { $0.loadUnaligned(as: UInt32.self).littleEndian }
+            if keyLen == 512 {
+                return try netDecryptHybrid(data, privateKey: secKey)
+            }
+        }
+        return try decryptRSA(data, privateKey: secKey)
     }
 
     /// Decrypts data with RSA or hybrid decryption (byte array key)
@@ -133,27 +177,61 @@ internal struct RSACryptographyHelper {
         return decrypted as Data
     }
 
-    /// Hybrid decryption: RSA-decrypted AES key + AES-GCM decrypted data
-    private static func decryptHybrid(_ data: Data, privateKey: SecKey) throws -> Data {
-        // Extract key length
+    /// Legacy Swift hybrid format (pre-Sess-136): `[HYBR:4][KeyLen:4 BE]
+    /// [EncKey][Nonce:12][CT:N][Tag:16]`. Preserved so existing user data
+    /// encrypted with older Swift libs continues to decrypt cleanly after
+    /// the lib update. New encryptions use the .NET-canonical format
+    /// produced by `encryptHybrid`.
+    private static func legacyDecryptHybrid(_ data: Data, privateKey: SecKey) throws -> Data {
         let keyLengthBytes = data[4..<8]
         let keyLength = keyLengthBytes.withUnsafeBytes { $0.loadUnaligned(as: UInt32.self).bigEndian }
 
-        // Extract encrypted key
         let keyStart = 8
         let keyEnd = keyStart + Int(keyLength)
         guard keyEnd < data.count else {
-            throw SaQuraError.decryptionFailed("Invalid hybrid encrypted data")
+            throw SaQuraError.decryptionFailed("Invalid hybrid encrypted data (legacy Swift format)")
         }
 
         let encryptedKey = data[keyStart..<keyEnd]
         let encryptedData = data[keyEnd...]
-
-        // Decrypt AES key with RSA
         let aesKey = try decryptRSA(Data(encryptedKey), privateKey: privateKey)
-
-        // Decrypt data with AES-GCM
         return try AESCryptographyHelper.decrypt(Data(encryptedData), key: aesKey.toBase64())
+    }
+
+    /// `.NET`-canonical hybrid format: `[KeyLen:4 LE = 512]
+    /// [EncKey:512][Nonce:12][Tag:16][CT:N]`. Matches the spec v1.1 §5.2
+    /// wire-format block and what HEAD .NET emits via
+    /// `RsaCryptographyHelper.HybridEncryptAsync`.
+    private static func netDecryptHybrid(_ data: Data, privateKey: SecKey) throws -> Data {
+        // keyLen is the first 4 bytes LE; we already verified it == 512 in
+        // the dispatch, but re-check for safety.
+        let keyLen = Int(data.prefix(4).withUnsafeBytes { $0.loadUnaligned(as: UInt32.self).littleEndian })
+        guard keyLen == 512 else {
+            throw SaQuraError.decryptionFailed("Invalid hybrid encrypted data (keyLen=\(keyLen), expected 512)")
+        }
+
+        let nonceStart = 4 + keyLen     // 516
+        let tagStart = nonceStart + 12  // 528
+        let ctStart = tagStart + 16     // 544
+        guard data.count >= ctStart else {
+            throw SaQuraError.decryptionFailed("Invalid hybrid encrypted data (too short for .NET layout)")
+        }
+
+        let encryptedKey = Data(data[4..<nonceStart])
+        let nonceBytes = Data(data[nonceStart..<tagStart])
+        let tag = Data(data[tagStart..<ctStart])
+        let ciphertext = Data(data[ctStart...])
+
+        let aesKey = try decryptRSA(encryptedKey, privateKey: privateKey)
+
+        do {
+            let symmetricKey = SymmetricKey(data: aesKey)
+            let gcmNonce = try AES.GCM.Nonce(data: nonceBytes)
+            let sealedBox = try AES.GCM.SealedBox(nonce: gcmNonce, ciphertext: ciphertext, tag: tag)
+            return try AES.GCM.open(sealedBox, using: symmetricKey)
+        } catch {
+            throw SaQuraError.decryptionFailed("Hybrid AES-GCM decryption failed: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - Signatures
